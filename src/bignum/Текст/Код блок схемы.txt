@@ -1,0 +1,291 @@
+classDiagram
+
+%% --- Шаблонная функция ---
+class Length_Int {
+    <<function template>>
+    +Length_Int(T num) int
+}
+
+%% --- Классы ошибок (иерархия наследования) ---
+class Error {
+    <<abstract>>
+    -Type_Error error
+    #enum Type_Error{Int_Number, Quotient_Number, NTT}
+}
+
+class Error_Int_Number {
+    -Type_Int_Number_Error error_int_number
+    #enum Type_Int_Number_Error{Division_By_Zero, Output, Input}
+    +Error_Int_Number()
+    +What(std::ostream* os) void
+}
+
+class Error_Division_By_Zero {
+    +Error_Division_By_Zero()
+    +What(std::ostream* os) void
+}
+
+class Error_Output {
+    +Error_Output()
+    +What(std::ostream* os) void
+}
+
+class Error_Input {
+    +Error_Input()
+    +What(std::ostream* os) void
+}
+
+class Error_Quotient_Number {
+    -Type_Quotient_Number_Error error_quotient_number
+    #enum Type_Quotient_Number_Error{Comparison_Uncertainty}
+    +Error_Quotient_Number()
+    +What(std::ostream* os) void
+}
+
+class Error_Comparison_Uncertainty {
+    +Error_Comparison_Uncertainty()
+    +What(std::ostream* os) void
+}
+
+class Error_NTT {
+    -Type_NTT_Error error_ntt
+    #enum Type_NTT_Error{Size_Array, Too_High_Degree}
+    +Error_NTT()
+    +What(std::ostream* os) void
+}
+
+class Error_Size_Array {
+    +Error_Size_Array()
+    +What(std::ostream* os) void
+}
+
+class Error_Too_High_Degree {
+    +Error_Too_High_Degree()
+    +What(std::ostream* os) void
+}
+
+%% --- Модули для NTT ---
+class Mod998244353 {
+    <<struct>>
+    +MOD : int = 998244353
+    +ROOT : int = 3
+    +MAX_LOG : int = 23
+}
+
+class Mod1004535809 {
+    <<struct>>
+    +MOD : int = 1004535809
+    +ROOT : int = 3
+    +MAX_LOG : int = 21
+}
+
+class Mod469762049 {
+    <<struct>>
+    +MOD : int = 469762049
+    +ROOT : int = 3
+    +MAX_LOG : int = 26
+}
+
+class Mod167772161 {
+    <<struct>>
+    +MOD : int = 167772161
+    +ROOT : int = 3
+    +MAX_LOG : int = 25
+}
+
+class Mod104857601 {
+    <<struct>>
+    +MOD : int = 104857601
+    +ROOT : int = 3
+    +MAX_LOG : int = 22
+}
+
+%% --- NTT класс ---
+class NTT {
+    <<template class>>
+    -static std::vector<int> roots
+    -static std::vector<int> roots_inv
+    -static std::vector<int> rev
+    -static bool initialized
+    -static std::mutex init_mutex
+    -static void init_impl() void
+    +static ensure_initialized() void
+    +static modpow(int a, int n, int mod) int
+    +static transform(std::vector<int>& a, bool inverse) void
+}
+
+%% --- Функции NTT ---
+class PerformNTTMultiplication {
+    <<function template>>
+    +PerformNTTMultiplication<Mod, Power_2>(std::vector<int>& Nu1, std::vector<int>& Nu2) void
+}
+
+class DispatchNTT {
+    <<function template>>
+    +DispatchNTT<Mod>(int power_2, std::vector<int>& Nu1, std::vector<int>& Nu2) void
+}
+
+%% --- Основной класс Int_Number ---
+class Int_Number {
+    -int* num
+    -int ptr_head
+    -int plt_tail
+    -int len_dedicated
+    -long len_num
+    -bool sign_plus
+    -mutable std::mutex guard
+    -static int Count_Block_To_One_Thread
+
+    %% Приватные методы (Bypass версии)
+    -static Division_NOT_Bypass(Int_Number& R, Int_Number& Nu2, Int_Number& Q) void
+    -Relocation_Bypass(int count) void
+    -Comparator_Bypass(const Int_Number& Nu) const int
+    -ABS_Comparator_Bypass(const Int_Number& Nu) const int
+    -Only_Add_With_Shift_Bypass(const Int_Number& Nu, int shift = 0) void
+    -Add_Bypass(const Int_Number& Nu) void
+    -Subtract_Bypass(const Int_Number& Nu) void
+    -Add_In_Bypass_Paralel(const Int_Number& Nu) void
+    -Subtract_In_Bypass_Paralel(const Int_Number& Nu) void
+    -Shift_Right_Bypass(int i) Int_Number&
+    -Shift_Left_Bypass(int i) Int_Number&
+    -Multiplication_Bypass(int q) void
+    -Multiplication_Bypass(const Int_Number& Nu) void
+    -Multiplication_NTT_Outward_Bypass(const Int_Number& Nu) const Int_Number
+
+    %% Публичные методы
+    +Int_Number()
+    +Int_Number(int len_dedicated1, int plt_tail1)
+    +Int_Number(int n)
+    +Int_Number(long long int n)
+    +Int_Number(Int_Number&& Nu)
+    +Int_Number(const Int_Number& Nu)
+    +Int_Number(const std::string& line_num)
+    ~Int_Number()
+    +All_Print(int count = 10) const void
+    +Technical_Print() const void
+    +Relocation(int count = 3) void
+    +Is_plus() const bool
+    +Length_Number() const int
+    +To_String() const std::string
+    +To_Clear_String() const std::string
+    +operator=(Int_Number&& Nu) void
+    +operator=(const Int_Number& Nu) void
+    +operator<=>(const Int_Number& Nu) const int
+    +operator>(const Int_Number& Nu) const bool
+    +operator<(const Int_Number& Nu) const bool
+    +operator>=(const Int_Number& Nu) const bool
+    +operator<=(const Int_Number& Nu) const bool
+    +operator==(const Int_Number& Nu) const bool
+    +operator!=(const Int_Number& Nu) const bool
+    +operator-() Int_Number&
+    +operator+=(const Int_Number& Nu) void
+    +operator-=(const Int_Number& Nu) void
+    +operator+(const Int_Number& Nu) const Int_Number
+    +operator-(const Int_Number& Nu) const Int_Number
+    +operator<<(int i) Int_Number&
+    +operator>>(int i) Int_Number&
+    +operator*=(int q) void
+    +operator*=(const Int_Number& Nu) void
+    +operator*(int q) const Int_Number
+    +operator*(const Int_Number& Nu) const Int_Number
+    +operator/=(const Int_Number& Nu) void
+    +operator%=(const Int_Number& Nu) void
+    +operator/(const Int_Number& Nu) const Int_Number
+    +operator%(const Int_Number& Nu) const Int_Number
+    +operator|(const Int_Number& Nu1) const Quotient_Number
+
+    %% Друзья
+    +friend Abs(Int_Number& Nu) Int_Number&
+    +friend NOD(const Int_Number& Nu1, const Int_Number& Nu2) Int_Number
+    +friend operator<<(std::ostream& os, const Int_Number& Nu) std::ostream&
+    +friend operator<<(std::ofstream& of, const Int_Number& Nu) std::ofstream&
+    +friend operator>>(std::istream& is, Int_Number& Nu) std::istream&
+    +friend operator>>(std::ifstream& is, Int_Number& Nu) std::ifstream&
+}
+
+%% --- Класс Quotient_Number ---
+class Quotient_Number {
+    -Int_Number up
+    -Int_Number doun
+    -bool sign_plus
+    -static std::atomic<long long> fractional_part_output_length
+    -mutable std::mutex guard
+
+    %% Приватный метод
+    -Irreducible_Fraction_Bypass() void
+
+    %% Публичные методы
+    +static Changing_Length_Fractional_Output(long long i) void
+    +Quotient_Number()
+    +Quotient_Number(int u)
+    +Quotient_Number(const Int_Number& u)
+    +Quotient_Number(const Int_Number& u1, const Int_Number& u2)
+    +Quotient_Number(const Int_Number& u1, const Int_Number& u2, bool plus)
+    +Quotient_Number(const Quotient_Number& q)
+    +Quotient_Number(Quotient_Number&& q)
+    +Quotient_Number(Int_Number&& u1, Int_Number&& u2)
+    +Quotient_Number(Int_Number&& u1, Int_Number&& u2, bool plus)
+    +Irreducible_Fraction() void
+    +operator<=>(const Quotient_Number& Q) const int
+    +operator>(const Quotient_Number& Q) const bool
+    +operator<(const Quotient_Number& Q) const bool
+    +operator>=(const Quotient_Number& Q) const bool
+    +operator<=(const Quotient_Number& Q) const bool
+    +operator==(const Quotient_Number& Q) const bool
+    +operator!=(const Quotient_Number& Q) const bool
+    +operator+(const Quotient_Number& Q) const Quotient_Number
+    +operator-(const Quotient_Number& Q) const Quotient_Number
+    +operator*(const Quotient_Number& Q) const Quotient_Number
+    +operator/(const Quotient_Number& Q) const Quotient_Number
+    +operator=(Quotient_Number&& Q) void
+    +operator=(const Quotient_Number& Q) void
+    +operator+=(const Quotient_Number& Q) void
+    +operator-=(const Quotient_Number& Q) void
+    +operator*=(const Quotient_Number& Q) void
+    +operator/=(const Quotient_Number& Q) void
+
+    %% Друзья
+    +friend operator<<(std::ostream& os, const Quotient_Number& Q) std::ostream&
+    +friend operator<<(std::ofstream& of, const Quotient_Number& Q) std::ofstream&
+    +friend operator>>(std::istream& is, Quotient_Number& Q) std::istream&
+    +friend operator>>(std::ifstream& is, Quotient_Number& Q) std::ifstream&
+}
+
+%% --- Связи наследования ошибок ---
+Error <|-- Error_Int_Number
+Error <|-- Error_Quotient_Number
+Error <|-- Error_NTT
+
+Error_Int_Number <|-- Error_Division_By_Zero
+Error_Int_Number <|-- Error_Output
+Error_Int_Number <|-- Error_Input
+
+Error_Quotient_Number <|-- Error_Comparison_Uncertainty
+
+Error_NTT <|-- Error_Size_Array
+Error_NTT <|-- Error_Too_High_Degree
+
+%% --- Композиция: Quotient_Number содержит два Int_Number ---
+Quotient_Number "1" *-- "1" Int_Number : up
+Quotient_Number "1" *-- "1" Int_Number : doun
+
+%% --- Использование: Int_Number использует NTT через Multiplication_NTT_Outward_Bypass ---
+Int_Number ..> NTT : uses for multiplication
+Int_Number ..> Error_Size_Array : throws on size mismatch
+Int_Number ..> Error_Too_High_Degree : throws on degree overflow
+
+%% --- Использование: Quotient_Number использует Int_Number ---
+Quotient_Number ..> Int_Number : Uses
+
+%% --- Внешние зависимости ---
+Length_Int ..> Int_Number : used for length calculation
+NTT ..> Error_Size_Array : throws if array size != 2^POWER_TWO
+NTT ..> Error_Too_High_Degree : thrown via DispatchNTT default case
+
+%% --- Цветовые макросы (не классы, но упомянем как константы) ---
+note right of Error
+    Also defines ANSI color macros:
+    RESET, BOLD, UNDERLINE, INVERT,
+    FG_BLACK..FG_BRIGHT_WHITE,
+    BG_BLACK..BG_BRIGHT_WHITE
+end note
